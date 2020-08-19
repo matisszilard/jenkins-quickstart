@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: registry
+  name: registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registry
+  template:
+    metadata:
+      labels:
+        app: registry
+    spec:
+      containers:
+        - image: registry:latest
+          name: registry
+          ports:
+            - containerPort: 5000
+              name: registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry
+  labels:
+    app: registry
+spec:
+  type: ClusterIP
+  selector:
+      app: registry
+  ports:
+    - port: 80
+      targetPort: 5000
+      protocol: TCP
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+    name: registry-ingress
+    annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+    rules:
+    - host: d.apps.okd.codespring.ro
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: registry
+            servicePort: 80
+---
